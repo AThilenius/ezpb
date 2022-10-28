@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+package wlabs.ezpb.transport;
+
+// Encoding:
+// <exchange_id: var-uint64><exchange_continues: var-bool><RpcHeader><Payload>
+
+message MaglevRpc {
+  // The full method path. Only set in the first method call request.
+  string method = 1;
+
+  Headers session_headers = 2;
+
+  Headers headers = 3;
+
+  // RPC Error. Implies no_payload.
+  Status error = 4;
+
+  // Set when no payload should be delivered to the call site, unlike an empty
+  // payload which is a default (zero) message.
+  bool no_payload = 5;
+
+  // The payload bytes.
+  bytes payload = 6;
+}
+
+message Headers { string auth = 1; }
+
+message Status {
+  // A status code as defined by 'google.rpc.Code'
+  int32 code = 1;
+
+  // Optional developer-facing error message
+  string message = 2;
+}

@@ -1,0 +1,60 @@
+syntax = "proto3";
+
+package wlabs.ezpb.meta;
+
+message Meta {
+  repeated Service services = 1;
+  repeated Type types = 2;
+  repeated Enum enums = 3;
+}
+
+message Name {
+  string namespace = 1;
+  string name = 2;
+}
+
+message Type {
+  Name name = 1;
+  repeated Field fields = 2;
+
+  message Field {
+    string name = 1;
+    uint32 id = 2;
+    string type_full_name = 3;
+    bool is_optional = 4;
+    bool is_repeated = 5;
+    string part_of = 6;
+    Classification classification = 7;
+
+    enum Classification {
+      Primitive = 1;
+      String = 2;
+      Bytes = 3;
+      Enum = 4;
+      EmbeddedMessage = 5;
+    }
+  }
+}
+
+message Enum {
+  Name name = 1;
+  repeated Field fields = 2;
+
+  message Field {
+    string name = 1;
+    int32 value = 2;
+  }
+}
+
+message Service {
+  Name name = 1;
+  repeated Method methods = 2;
+
+  message Method {
+    string name = 1;
+    string req_full_type_name = 2;
+    string res_full_type_name = 3;
+    bool is_req_streamed = 4;
+    bool is_res_streamed = 5;
+  }
+}

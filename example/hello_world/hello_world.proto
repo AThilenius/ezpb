@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+package hello_world;
+
+message Hello { string body = 1; }
+
+service HelloService { rpc Hello(Hello) returns (Hello); }

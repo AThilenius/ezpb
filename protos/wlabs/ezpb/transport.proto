@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+package wlabs.ezpb.transport;
+
+// Transport messages (ie non-control messages) are encoded as:
+// Transport-Frame( <MsgHeader size varint> <MsgHeader> <payload> )
+// All web transports are already framed, so <payload> length is not captured
+// anywhere in ezpb's protocol and can be treated (at this level) as an opaque
+// binary blob that fills the remainder of the transport frame.
+
+message MsgHeader {
+  // Exchange ID uniquely identifies a single exchange (a request-response
+  // stream) and disambiguate requests from responses. Requests made by a
+  // called set the next positive exchange_id, and reposes return the reciprocal
+  // (negative) of the caller's request id. With how protobuf encodes ints, this
+  // is much more efficient than having either a bool 'is_response' field, or
+  // a separate message type for request vs. response.
+  int64 exchange_id = 1;
+
+  // If false (or omitted), sender is finished sending non-error messages to
+  // this exchange. Sender may still send an error to cancel the exchange.
+  bool exchange_continues = 2;
+
+  // MUST be set for first message in an exchange to indicate exchange type.
+  // Currently it MUST be an RPC method name of the form "<service>/<method>".
+  string exchange_type = 3;
+
+  // Set to indicate fatal errors; Status MUST have non-zero 'code' that follows
+  // gRPC. If set, exchange_continues MUST be false. On error, sender is
+  // finished sending payloads.
+  Status error = 4;
+
+  // If set, this message does not include a payload. This is different from
+  // having a zero-length payload (which could just be an encoded 'default'
+  // response), and may be used for e.g. opening or closing an exchange.
+  bool no_payload = 5;
+
+  // An auth token (generally a signed JWT) for this and subsequent requests.
+  // This value is 'sticky', the same value will be set on all subsequent calls
+  // if 'auth' is omitted.
+  string auth = 6;
+}
+
+message Status {
+  // A status code as defined by 'google.rpc.Code'
+  int32 code = 1;
+
+  // Optional developer-facing error message
+  string message = 2;
+}
